@@ -92,7 +92,7 @@ export function createTrajectoryInspection(viewport, panel, entry, copy, overlay
     const sizes=layers.map(({rail,box})=>{
       rail.style.top=`${viewport.offsetTop}px`;
       box.style.width='max-content';
-      box.style.maxWidth=`${Math.min(175,Math.max(85,width*.31))}px`;
+      box.style.maxWidth=`${Math.min(175,Math.max(85,width*(width < 400 ? .43 : .31)))}px`;
       return {width:box.offsetWidth,height:box.offsetHeight};
     });
     const targets=points.map(set=>[...messageTargets].map(index=>set[index]).filter(Boolean).map(project));

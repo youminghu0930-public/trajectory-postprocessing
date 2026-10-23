@@ -15,7 +15,7 @@ Open http://127.0.0.1:8004. Requires Node.js 22+ and FFmpeg (including ffprobe) 
 - `materials/content.json`: page title, all five section headings and copy, navigation, and viewer labels. The first four sections are placeholders.
 - `materials/data/vidoes/{face-on,down-the-line}/*.MP4`: original videos. The existing `vidoes` spelling is retained.
 - `materials/data/poses/{before,after}/{view}/{id}.json`: matching frame-based predictions, using `joints` and `pred` arrays.
-- `materials/data/poses/snapshot.json`: snapshot ranges with inclusive zero-based `[start, end]` indices, a selected `joint`, and Before/After `message_box` text. The background uses the end frame; two fading trajectories show the selected joint throughout the range.
+- `materials/data/poses/snapshot.json`: snapshot ranges with inclusive zero-based `[start, end]` indices, a selected `joint`, and Before/After `message_box` text. Optional `highlight_index` is a single zero-based frame inside the range. The background and message connectors use this frame (or the end frame when omitted); two fading trajectories show the selected joint throughout the range.
 - `materials/data/credits.json`: optional source credits.
 - `materials/data/catalog.json` and `.generated/`: disposable generated metadata and previews; ignored by Git.
 
@@ -28,6 +28,7 @@ node --test tests/*.test.mjs
 node scripts/build-site.mjs
 node scripts/verify-site.mjs
 node scripts/serve.mjs --dist
+node scripts/check-media.mjs
 ```
 
 Builds include only referenced assets and use visible `media/` paths for generated delivery assets. Original videos receive lossless fast-start preparation; optional re-encoding is configured in `scripts/media-options.json`.

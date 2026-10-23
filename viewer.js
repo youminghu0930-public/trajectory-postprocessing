@@ -136,6 +136,7 @@ export async function mountViewer(root, copy, { priorityReady } = {}) {
   sidebarHeading.append(make('h3', copy.listTitle), countLabel);
   const viewLabel = make('label', copy.viewLabel);
   const viewSelect = make('select');
+  viewSelect.setAttribute('aria-label', copy.viewLabel);
   viewSelect.disabled = true;
   viewLabel.append(viewSelect);
   const list = make('div', undefined, 'video-list');

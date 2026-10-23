@@ -359,3 +359,11 @@ header[data-expanded=false] { width: 0; padding-inline: 0; border: 0; }
 
 .trajectory-pair-layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 4; }
 .trajectory-pair-layer line { stroke: #fff; stroke-width: 1.5; stroke-linecap: butt; }
+
+/* Keep snapshot notes readable and carousel controls easy to tap on phones. */
+@media (max-width: 600px) {
+  .snapshot-arrow { width: 44px; min-height: 48px; }
+  .snapshot-dots button { flex-basis: 44px; width: 44px; height: 44px; }
+  .trajectory-message { font-size: 11px; line-height: 1.4; padding: 8px; }
+  .frame-slider { min-height: 44px; }
+}
