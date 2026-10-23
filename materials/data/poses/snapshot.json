@@ -1,0 +1,84 @@
+{
+    "0026-2": [
+        {
+            "range": [
+                130,
+                150
+            ],
+            "joint": "golf_club_head",
+            "highlight_index": 141,
+            "message_box": {
+                "before": "Jitter from motion blur and dirt occlusion",
+                "after": "Smoother club head trajectory"
+            }
+        }
+    ],
+    "0025-1": [
+        {
+            "range": [
+                140,
+                155
+            ],
+            "joint": "golf_club_head",
+            "highlight_index": 148,
+            "message_box": {
+                "before": "Unstable trajectory when the body obscures the club",
+                "after": "More plausible trajectory through occlusion"
+            }
+        }
+    ],
+    "0005": [
+        {
+            "range": [
+                90,
+                111
+            ],
+            "joint": "golf_club_head",
+            "highlight_index": 109,
+            "message_box": {
+                "before": "Club head position is misplaced",
+                "after": "Corrected club head position"
+            }
+        },
+        {
+            "range": [
+                190,
+                240
+            ],
+            "joint": "golf_club_head",
+            "highlight_index": 205,
+            "message_box": {
+                "before": "Club head position is misplaced",
+                "after": "Corrected club head position"
+            }
+        }
+    ],
+    "0012": [
+        {
+            "range": [
+                59,
+                95
+            ],
+            "joint": "golf_club_head",
+            "highlight_index": 75,
+            "message_box": {
+                "before": "Prediction clipped at the frame boundary",
+                "after": "Smooth trajectory despite out-of-frame detections"
+            }
+        }
+    ],
+    "0026-4": [
+        {
+            "range": [
+                40,
+                80
+            ],
+            "joint": "golf_club_head",
+            "highlight_index": 62,
+            "message_box": {
+                "before": "Prediction clipped at the frame boundary",
+                "after": "Smooth trajectory despite out-of-frame detections"
+            }
+        }
+    ]
+}

@@ -1,0 +1,142 @@
+{
+  "page": {
+    "title": "Trajectory Postprocessing",
+    "description": "Before and after comparisons of golf swing trajectory postprocessing.",
+    "eyebrow": "Computer vision \u00b7 Golf swing analysis",
+    "role": "",
+    "navigationLabel": "Project sections",
+    "navigationToggle": "Toggle section navigation",
+    "banner": {
+      "enabled": false,
+      "video": "down-the-line-0026-1",
+      "startFrame": 73,
+      "label": "Golf swing pose and club detection"
+    },
+    "mainPage": {
+      "label": "Return to main page",
+      "url": "https://you-ming-hu.github.io/"
+    },
+    "footer": "Trajectory postprocessing"
+  },
+  "sections": [
+    {
+      "id": "goal",
+      "title": "Goal",
+      "paragraphs": [
+        "Content coming soon."
+      ]
+    },
+    {
+      "id": "difficulty",
+      "title": "Challenges",
+      "paragraphs": [
+        "Content coming soon."
+      ]
+    },
+    {
+      "id": "accomplishment",
+      "title": "Contributions and Outcomes",
+      "paragraphs": [
+        "Content coming soon."
+      ]
+    },
+    {
+      "id": "influence",
+      "title": "Lasting Impact",
+      "paragraphs": [
+        "Content coming soon."
+      ]
+    },
+    {
+      "id": "result",
+      "title": "Results",
+      "paragraphs": [
+        "Compare trajectories before and after postprocessing using the selected snapshots and synchronized videos below."
+      ],
+      "demo": {
+        "before": "Before",
+        "after": "After",
+        "modelTag": "{label} \u00b7 {model}",
+        "listTitle": "Swing videos",
+        "videoTitle": "Video comparison",
+        "snapshots": {
+          "title": "Snapshot highlights",
+          "inspectionHint": "",
+          "carousel": "carousel",
+          "loading": "Loading snapshot highlights\u2026",
+          "empty": "No snapshots have been selected yet.",
+          "error": "Snapshot highlights could not be loaded. The video viewer is still available below.",
+          "imageError": "This snapshot image could not be loaded.",
+          "previous": "Previous snapshot",
+          "next": "Next snapshot",
+          "navigation": "Choose a snapshot",
+          "itemLabel": "Swing {video} \u00b7 Frame {frame}",
+          "show": "Show swing {video}, frame {frame}",
+          "frame": "Frame {frame}",
+          "position": "{current} / {total} \u00b7 Swing {video} \u00b7 Frame {frame}",
+          "focus": "Focus: {joints}"
+        },
+        "creditLabel": "Video source:",
+        "creditLink": "Original Instagram post \u2197",
+        "viewLabel": "Camera view",
+        "views": {
+          "all": "All views",
+          "face-on": "Face-on",
+          "down-the-line": "Down the line"
+        },
+        "clipLabel": "Swing {id}",
+        "videoCount": "{count} videos",
+        "frame": "Frame {current} / {total}",
+        "slider": "Video frame",
+        "start": "Jump to start",
+        "previous": "Previous frame",
+        "play": "Play",
+        "stop": "Stop",
+        "next": "Next frame",
+        "end": "Jump to end",
+        "loading": "Loading swing\u2026",
+        "loadVideo": "Tap to load video",
+        "loadingDemo": "Loading the video demo\u2026",
+        "loadingList": "Loading video list\u2026",
+        "ready": "Ready",
+        "error": "This swing could not be loaded. Select a video to try again.",
+        "empty": "No videos available.",
+        "keyboard": "Press Space to play or pause. Tap \u2190 / \u2192 to step one frame; hold to repeat.",
+        "inspectionHint": "Hover to inspect a joint or connection. Click to select; Shift-click to select multiple joints or connections.",
+        "legendHint": "Click or tap Before / After to show or hide each snapshot overlay.",
+        "panZoomLabel": "Linked pan and zoom",
+        "zoomIn": "Zoom in",
+        "zoomOut": "Zoom out",
+        "zoomLevel": "Zoom level",
+        "resetView": "Reset view",
+        "panZoomHint": "Scroll or pinch to zoom; drag to pan when zoomed in.",
+        "skeletonLabel": "{view} trajectory",
+        "featureLabel": "{view} \u00b7 {feature}",
+        "connectionLabel": "{from} \u2014 {to}",
+        "jointNames": {
+          "nose": "Nose",
+          "atlas": "Atlas",
+          "top_head": "Top of head",
+          "left_ear": "Left ear",
+          "right_ear": "Right ear",
+          "left_shoulder": "Left shoulder",
+          "right_shoulder": "Right shoulder",
+          "left_elbow": "Left elbow",
+          "right_elbow": "Right elbow",
+          "left_wrist": "Left wrist",
+          "right_wrist": "Right wrist",
+          "left_hip": "Left hip",
+          "right_hip": "Right hip",
+          "left_knee": "Left knee",
+          "right_knee": "Right knee",
+          "left_ankle": "Left ankle",
+          "right_ankle": "Right ankle",
+          "golf_club_grip": "Club grip",
+          "golf_club_shaft": "Club shaft",
+          "golf_club_heel": "Club heel",
+          "golf_club_head": "Club head"
+        }
+      }
+    }
+  ]
+}
