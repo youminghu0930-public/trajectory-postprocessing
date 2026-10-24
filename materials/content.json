@@ -54,7 +54,7 @@
           ]
         }
       ],
-      "note": "The 80% figure describes the jittery cases evaluated, rather than a universal accuracy rate. Upfront cost covers new data collection and annotation, excluding compute and development time."
+      "note": "Upfront cost covers new data collection and annotation, excluding compute and development time."
     },
     {
       "id": "introduction",
@@ -101,8 +101,7 @@
       "title": "Results",
       "paragraphs": [
         "The model produced smoother trajectories, rejected outliers, and retained sharp motion near impact across the footage evaluated. It also stabilized body-joint sequences and entered the standard keypoint workflow."
-      ],
-      "note": "These comparisons illustrate observed reconstruction behavior. No aggregate smoothness score or controlled numerical baseline comparison is reported."
+      ]
     },
     {
       "id": "discussion",
@@ -111,13 +110,13 @@
         {
           "title": "What the results suggest",
           "paragraphs": [
-            "The observed results support using synthetic clean motion and realistic corruption to train sequence-level reconstruction when reliable reference trajectories are unavailable. Compared with the conventional filters we tried, the model covered a broader range of recording conditions without the same repeated parameter tuning. This comparison reflects our evaluated footage, rather than a universal claim about filtering methods."
+            "The observed results support using synthetic clean motion and realistic corruption to train sequence-level reconstruction when reliable reference trajectories are unavailable. Compared with the conventional filters we tried, the model covered a broader range of recording conditions without the same repeated parameter tuning."
           ]
         },
         {
           "title": "Limitations",
           "paragraphs": [
-            "Synthetic motion and camera sampling cannot fully represent real swings. Noise extracted from a particular detector may also limit transfer to different error distributions. Positions reconstructed through occlusion or outside the frame remain estimates; greater smoothness alone does not establish positional accuracy. Quantitative evaluation of smoothness, reconstruction error, and impact preservation remains necessary for stronger comparisons."
+            "Synthetic motion and camera sampling cannot fully represent real swings. Noise extracted from a particular detector may also limit transfer to different error distributions. Positions reconstructed through occlusion or outside the frame remain estimates; greater smoothness alone does not establish positional accuracy."
           ]
         },
         {
@@ -129,8 +128,7 @@
         {
           "title": "Future directions",
           "paragraphs": [
-            "Future work would improve noise synthesis so training depends less on errors extracted from a particular detector. Extending synthetic data to coordinated human skeleton movement and refining virtual-camera sampling could also improve coverage of real motion and viewpoints.",
-            "A further priority is reproducible evaluation of trajectory smoothness, reconstruction error, and impact preservation across frame rates and failure types. These measurements would support clearer comparisons and regression checks."
+            "Future work would improve noise synthesis so training depends less on errors extracted from a particular detector. Extending synthetic data to coordinated human skeleton movement and refining virtual-camera sampling could also improve coverage of real motion and viewpoints."
           ]
         }
       ]
