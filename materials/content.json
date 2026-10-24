@@ -37,6 +37,20 @@
         "Annotation consistency: Human annotators can label individual frames, but maintaining the precise temporal consistency needed for a smooth trajectory across an entire swing is impractical.",
         "Dropped frames: Gaps in the source recordings break the continuity of the motion, even before detection errors are introduced.",
         "Missing observations: Body occlusion and out-of-frame movement leave parts of the club path unobservable. More annotation cannot recover positions that the footage does not show."
+      ],
+      "subsections": [
+        {
+          "title": "Consistent filtering across frame rates",
+          "paragraphs": [
+            "Conventional signal filters, including the Kalman-based approaches we tried, did not perform consistently across low- and high-frame-rate footage. Suitable parameter settings varied with the sampling rate and the phase of the swing. Rapid changes in speed, direction, and acceleration are central to the movement, making the motion assumptions used by those filters difficult to maintain throughout a swing."
+          ]
+        },
+        {
+          "title": "Preserving the trajectory around impact",
+          "paragraphs": [
+            "In down-the-line footage, sparse samples around impact can form a sharp turn in the observed 2D trajectory. Excessive smoothing can round off this region and distort the motion we need to measure. Impact has particularly little tolerance for error, so preserving its geometry was a critical requirement."
+          ]
+        }
       ]
     },
     {
@@ -62,6 +76,12 @@
           "title": "Sequence model and loss design",
           "paragraphs": [
             "I designed the model and its loss function for trajectory reconstruction. Alongside the regression objective, I introduced task-specific regularization criteria to guide convergence toward plausible motion. Architecture and implementation details remain confidential."
+          ]
+        },
+        {
+          "title": "Practical coverage while preserving impact motion",
+          "paragraphs": [
+            "The resulting model handled the frame-rate variation and abrupt motion changes in the footage we evaluated, while preserving the trajectory around impact. It reduced jitter and rejected outliers without excessively smoothing this sensitive region. Its coverage across recording conditions was broad enough for practical use in the product workflow."
           ]
         }
       ]
@@ -89,6 +109,7 @@
       "title": "Results",
       "paragraphs": [
         "The resulting model filters outliers and reconstructs smoother, more plausible trajectories. In some cases, it also relocates misplaced predictions toward the expected motion path. Applying the model to body joints improves the temporal stability of the pose sequence as well.",
+        "Across the footage we evaluated, the model handled low and high frame rates and retained the sharp trajectory changes around impact. This balance between noise reduction and motion preservation provided the coverage needed for practical product use.",
         "The snapshots below show the selected joint’s trajectory before and after postprocessing, with the background image taken at the highlighted frame. The synchronized videos compare the complete body and club predictions frame by frame. Yellow indicates Before; green indicates After."
       ],
       "demo": {
