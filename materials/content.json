@@ -1,16 +1,16 @@
 {
   "page": {
     "title": "Trajectory Postprocessing",
-    "description": "Before and after comparisons of golf swing trajectory postprocessing.",
-    "eyebrow": "Computer vision \u00b7 Golf swing analysis",
-    "role": "",
+    "description": "Learning to stabilize golf swing trajectories through synthetic 3D motion, realistic detection noise, and sequence-level reconstruction.",
+    "eyebrow": "Computer vision · Golf swing analysis",
+    "role": "My role: I developed the synthetic motion and noise pipelines, designed the sequence model and loss function, and delivered a postprocessing tool adopted across the product’s keypoint workflow.",
     "navigationLabel": "Project sections",
     "navigationToggle": "Toggle section navigation",
     "banner": {
-      "enabled": false,
-      "video": "down-the-line-0026-1",
-      "startFrame": 73,
-      "label": "Golf swing pose and club detection"
+      "enabled": true,
+      "video": "down-the-line-0028",
+      "startFrame": 0,
+      "label": "Stabilized body and club motion"
     },
     "mainPage": {
       "label": "Return to main page",
@@ -23,61 +23,99 @@
       "id": "goal",
       "title": "Goal",
       "paragraphs": [
-        "Content coming soon."
+        "Stabilize club trajectories across a golf swing and recover more plausible motion from noisy frame-by-frame detections.",
+        "Small pixel changes, flickering lighting in high-frame-rate footage, extreme motion blur, and a club moving outside the image can make individual predictions unstable. A single-frame detector lacks the temporal context needed to resolve these inconsistencies. The goal was to use the movement sequence to reject outliers and reconstruct a trajectory suitable for the product’s swing analysis workflow."
       ]
     },
     {
       "id": "difficulty",
       "title": "Challenges",
       "paragraphs": [
-        "Content coming soon."
+        "The main obstacle was obtaining reliable training pairs: a noisy trajectory as input and a clean trajectory as the target. Real footage and manual annotation could not provide sufficiently smooth, complete reference sequences."
+      ],
+      "items": [
+        "Annotation consistency: Human annotators can label individual frames, but maintaining the precise temporal consistency needed for a smooth trajectory across an entire swing is impractical.",
+        "Dropped frames: Gaps in the source recordings break the continuity of the motion, even before detection errors are introduced.",
+        "Missing observations: Body occlusion and out-of-frame movement leave parts of the club path unobservable. More annotation cannot recover positions that the footage does not show."
       ]
     },
     {
       "id": "accomplishment",
       "title": "Contributions and Outcomes",
       "paragraphs": [
-        "Content coming soon."
+        "I addressed the training-data bottleneck by generating clean motion synthetically, then teaching a sequence model to reconstruct it from realistic corruption."
+      ],
+      "subsections": [
+        {
+          "title": "Synthetic 3D swing generation",
+          "paragraphs": [
+            "Using my observations of golf swing motion, I developed a method to automatically generate varied synthetic 3D club paths. Virtual cameras placed around each path produced complete 2D trajectories from different viewpoints. This provided smooth reference motion without the annotation inconsistencies, dropped frames, and visibility gaps in recorded footage."
+          ]
+        },
+        {
+          "title": "Realistic clean–noisy training pairs",
+          "paragraphs": [
+            "I characterized detection noise by comparing our model’s predictions with existing manual annotations. I combined these observed errors with additional noise patterns I designed, creating corrupted inputs paired with the clean synthetic trajectories. This connected the synthetic training data to the failure cases encountered in the product."
+          ]
+        },
+        {
+          "title": "Sequence model and loss design",
+          "paragraphs": [
+            "I designed the model and its loss function for trajectory reconstruction. Alongside the regression objective, I introduced task-specific regularization criteria to guide convergence toward plausible motion. Architecture and implementation details remain confidential."
+          ]
+        }
       ]
     },
     {
       "id": "influence",
       "title": "Lasting Impact",
       "paragraphs": [
-        "Content coming soon."
+        "The project met its original goal of making club trajectories more stable and realistic. We then found that the same model could also stabilize body-joint sequences, extending its use across the product’s keypoints.",
+        "The model became a general signal postprocessing tool in the standard production workflow, improving temporal consistency for both club tracking and human pose estimation."
+      ],
+      "subsections": [
+        {
+          "title": "Future work",
+          "items": [
+            "More realistic noise synthesis: Generate detection-like errors directly, reducing dependence on extracting noise from a particular detector.",
+            "Human motion synthesis: Extend the synthetic-data approach to coordinated human skeleton movement.",
+            "Camera placement: Develop more targeted virtual-camera sampling to better represent the viewpoints encountered in practice."
+          ]
+        }
       ]
     },
     {
       "id": "result",
       "title": "Results",
       "paragraphs": [
-        "Compare trajectories before and after postprocessing using the selected snapshots and synchronized videos below."
+        "The resulting model filters outliers and reconstructs smoother, more plausible trajectories. In some cases, it also relocates misplaced predictions toward the expected motion path. Applying the model to body joints improves the temporal stability of the pose sequence as well.",
+        "The snapshots below show the selected joint’s trajectory before and after postprocessing, with the background image taken at the highlighted frame. The synchronized videos compare the complete body and club predictions frame by frame. Yellow indicates Before; green indicates After."
       ],
       "demo": {
         "before": "Before",
         "after": "After",
-        "modelTag": "{label} \u00b7 {model}",
+        "modelTag": "{label} · {model}",
         "listTitle": "Swing videos",
         "videoTitle": "Video comparison",
         "snapshots": {
           "title": "Snapshot highlights",
           "inspectionHint": "",
           "carousel": "carousel",
-          "loading": "Loading snapshot highlights\u2026",
+          "loading": "Loading snapshot highlights…",
           "empty": "No snapshots have been selected yet.",
           "error": "Snapshot highlights could not be loaded. The video viewer is still available below.",
           "imageError": "This snapshot image could not be loaded.",
           "previous": "Previous snapshot",
           "next": "Next snapshot",
           "navigation": "Choose a snapshot",
-          "itemLabel": "Swing {video} \u00b7 Frame {frame}",
+          "itemLabel": "Swing {video} · Frame {frame}",
           "show": "Show swing {video}, frame {frame}",
           "frame": "Frame {frame}",
-          "position": "{current} / {total} \u00b7 Swing {video} \u00b7 Frame {frame}",
+          "position": "{current} / {total} · Swing {video} · Frame {frame}",
           "focus": "Focus: {joints}"
         },
         "creditLabel": "Video source:",
-        "creditLink": "Original Instagram post \u2197",
+        "creditLink": "Original Instagram post ↗",
         "viewLabel": "Camera view",
         "views": {
           "all": "All views",
@@ -94,14 +132,14 @@
         "stop": "Stop",
         "next": "Next frame",
         "end": "Jump to end",
-        "loading": "Loading swing\u2026",
+        "loading": "Loading swing…",
         "loadVideo": "Tap to load video",
-        "loadingDemo": "Loading the video demo\u2026",
-        "loadingList": "Loading video list\u2026",
+        "loadingDemo": "Loading the video demo…",
+        "loadingList": "Loading video list…",
         "ready": "Ready",
         "error": "This swing could not be loaded. Select a video to try again.",
         "empty": "No videos available.",
-        "keyboard": "Press Space to play or pause. Tap \u2190 / \u2192 to step one frame; hold to repeat.",
+        "keyboard": "Press Space to play or pause. Tap ← / → to step one frame; hold to repeat.",
         "inspectionHint": "Hover to inspect a joint or connection. Click to select; Shift-click to select multiple joints or connections.",
         "legendHint": "Click or tap Before / After to show or hide each snapshot overlay.",
         "panZoomLabel": "Linked pan and zoom",
@@ -111,8 +149,8 @@
         "resetView": "Reset view",
         "panZoomHint": "Scroll or pinch to zoom; drag to pan when zoomed in.",
         "skeletonLabel": "{view} trajectory",
-        "featureLabel": "{view} \u00b7 {feature}",
-        "connectionLabel": "{from} \u2014 {to}",
+        "featureLabel": "{view} · {feature}",
+        "connectionLabel": "{from} — {to}",
         "jointNames": {
           "nose": "Nose",
           "atlas": "Atlas",

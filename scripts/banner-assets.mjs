@@ -13,7 +13,7 @@ export function prepareBanner(root, clips, settings) {
   const source = path.join(root, clip.video);
   const poseSource = path.join(root, clip.poses.after);
   const hash = createHash('sha256').update(fs.readFileSync(source)).update(fs.readFileSync(poseSource))
-    .update(`banner-480-crf30-v3-start${startFrame}`).digest('hex').slice(0, 12);
+    .update(`banner-480-crf30-v5-start${startFrame}`).digest('hex').slice(0, 12);
   const base = `materials/data/.generated/banner-${clip.key}-${hash}`;
   const video = `${base}.mp4`, pose = `${base}.json`, poster = `${base}-first.webp`;
   const data = JSON.parse(fs.readFileSync(poseSource, 'utf8'));
@@ -29,7 +29,7 @@ export function prepareBanner(root, clips, settings) {
     fs.renameSync(temporary, path.join(root, video));
   }
   if (!fs.existsSync(path.join(root, pose))) {
-    fs.writeFileSync(path.join(root, pose), JSON.stringify({ joints: data.joints, pred: data.pred.slice(startFrame, clip.frameCount) }));
+    fs.writeFileSync(path.join(root, pose), JSON.stringify({ joints: data.joints, pred: data.pred.slice(startFrame, clip.frameCount), history: data.pred.slice(Math.max(0,startFrame-10),startFrame) }));
   }
-  return { key: clip.key, video, pose, poster, times: clip.times.slice(startFrame).map(time => time-clip.times[startFrame]), previewPose: { joints: data.joints, pred: [data.pred[startFrame]] } };
+  return { key: clip.key, video, pose, poster, times: clip.times.slice(startFrame).map(time => time-clip.times[startFrame]), previewTrail: { joints: data.joints, pred: data.pred.slice(Math.max(0,startFrame-10),startFrame+1) }, previewPose: { joints: data.joints, pred: [data.pred[startFrame]] } };
 }

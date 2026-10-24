@@ -1,3 +1,4 @@
+import { createBannerTrail, videoTrailFrameCount } from './banner-trail.js';
 import { createFrameSeeker } from './frame-seeker.js';
 import { createPoseOverlay } from './pose-overlay.js';
 import { installFrameKeys } from './frame-keys.js';
@@ -44,8 +45,13 @@ export async function mountViewer(root, copy, { priorityReady } = {}) {
   loadButton.type = 'button'; loadButton.hidden = true;
   screens.append(loadingOverlay);
   const canvases = [];
-  const selected = new Set();
+  const selected = new Set(['joint:right_wrist','joint:golf_club_head']);
   const overlays = [];
+  const trails = [];
+  let trailPoses = [], trailState = {zoom:1,x:0,y:0};
+  function refreshTrailSelection() {
+    draw();
+  }
   const viewports = [], scenes = [];
   for (const label of [copy.before, copy.after]) {
     const panel = make('div', undefined, 'comparison-panel');
@@ -63,12 +69,13 @@ export async function mountViewer(root, copy, { priorityReady } = {}) {
     viewports.push(viewport); scenes.push(scene);
     const overlay = createPoseOverlay(viewport, canvases.length, copy, selected, (key, additive) => {
       if (key === null) {
-        selected.clear(); overlays.forEach(item => item.updateSelection()); return;
+        selected.clear(); overlays.forEach(item => item.updateSelection()); refreshTrailSelection(); return;
       }
       const remove = selected.has(key) && (additive || selected.size === 1);
       if (!additive) selected.clear();
       if (remove) selected.delete(key); else selected.add(key);
       for (const item of overlays) item.updateSelection();
+      refreshTrailSelection();
     }, { fullBody: true });
     overlays.push(overlay);
     panel.append(heading, viewport);
@@ -117,7 +124,9 @@ export async function mountViewer(root, copy, { priorityReady } = {}) {
   zoomLabel.setAttribute('aria-label', copy.zoomLevel);
   zoomControls.append(zoomOut, zoomLabel, zoomIn, resetView);
   const linkedView = installLinkedView(viewports, scenes, state => {
+    trailState = state;
     overlays.forEach(overlay => overlay.setTransform(state));
+    trails.forEach(trail => trail.setTransform(state));
     zoomLabel.textContent = `${Math.round(state.zoom * 100)}%`;
     zoomOut.disabled = state.zoom <= 1; zoomIn.disabled = state.zoom >= 6;
     resetView.disabled = state.zoom === 1;
@@ -143,8 +152,9 @@ export async function mountViewer(root, copy, { priorityReady } = {}) {
   sidebar.append(sidebarHeading, viewLabel, list);
   root.replaceChildren(player, sidebar, details);
   document.addEventListener('click', event => {
-    if (event.defaultPrevented || event.target.closest('.pose-viewport, button, input, select, a, label')) return;
-    selected.clear(); overlays.forEach(overlay => overlay.updateSelection());
+    // Playback swaps its SVG icon during the click; the original target may be detached.
+    if (event.defaultPrevented || event.composedPath().some(node => node instanceof Element && node.matches('.pose-viewport, button, input, select, a, label'))) return;
+    selected.clear(); overlays.forEach(overlay => overlay.updateSelection()); refreshTrailSelection();
   });
 
   let clips = [], active, frame = 0, renderedFrame = 0, ready = false, playing = false;
@@ -194,6 +204,9 @@ export async function mountViewer(root, copy, { priorityReady } = {}) {
     for (const [index, canvas] of canvases.entries()) {
       const ctx = canvas.getContext('2d');
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const joints = [...selected].filter(key => key.startsWith('joint:')).map(key => key.slice(6));
+      if (joints.length && trailPoses[index]) trails[index]?.render(trailPoses[index],renderedFrame,joints);
+      else trails[index]?.clear();
       overlays[index].render(renderedFrame);
     }
     updateFrameLabel();
@@ -275,6 +288,7 @@ export async function mountViewer(root, copy, { priorityReady } = {}) {
     return data;
   }
   async function select(clip) {
+    selected.clear(); selected.add('joint:right_wrist'); selected.add('joint:golf_club_head');
     const current = ++version;
     controller?.abort(); controller = new AbortController();
     const { signal } = controller;
@@ -282,6 +296,7 @@ export async function mountViewer(root, copy, { priorityReady } = {}) {
     frameKeys.clear();
     linkedView.reset();
     for (const overlay of overlays) overlay.clear();
+    trails.splice(0).forEach(trail => trail.remove()); trailPoses = [];
     if (videoBlobURL) { URL.revokeObjectURL(videoBlobURL); videoBlobURL = undefined; }
     active = clip; frame = 0; status.textContent = copy.loading; loadingOverlay.textContent = copy.loading;
     renderCredit(clip);
@@ -340,6 +355,11 @@ export async function mountViewer(root, copy, { priorityReady } = {}) {
       if (current !== version) return;
       overlays[0].setPose(left, active.width, active.height);
       overlays[1].setPose(right, active.width, active.height);
+      trailPoses = [left,right];
+      viewports.forEach((viewport,index) => {
+        const trail = createBannerTrail(viewport,active.width,active.height,{historyFrames:videoTrailFrameCount(clip.frameCount),color:index?'#8bd4ad':'#e0bc6f',lineScale:1.1});
+        trail.setTransform(trailState); trails.push(trail);
+      });
       for (const canvas of canvases) {
         canvas.width = Math.min(720, video.videoWidth);
         canvas.height = Math.round(canvas.width * video.videoHeight / video.videoWidth);
@@ -361,7 +381,7 @@ export async function mountViewer(root, copy, { priorityReady } = {}) {
       const image = make('img'); image.src = clip.thumbnail; image.alt = ''; image.loading = 'lazy'; image.decoding = 'async';
       image.width = 96; image.height = 72;
       const caption = make('span'); caption.append(make('strong', format(copy.clipLabel, clip)), make('small', copy.views[clip.view] || clip.view.replaceAll('-', ' ')));
-      button.append(image, caption); button.onclick = () => select(clip); list.append(button);
+      button.append(image, caption); button.onclick = event => { event.stopPropagation(); select(clip); }; list.append(button);
     }
   }
   viewSelect.onchange = () => {

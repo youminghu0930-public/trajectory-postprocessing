@@ -1,3 +1,4 @@
+import { createBannerTrail } from './banner-trail.js';
 import { createPoseOverlay } from './pose-overlay.js';
 import { comparisonLabels } from './model-labels.js';
 import { readCatalog } from './catalog.js';
@@ -38,24 +39,34 @@ export async function mountBanner(root, settings, copy) {
   }, { once: true });
   poster.src=video.poster;
   viewport.append(video,poster);
-  const overlay=createPoseOverlay(viewport,1,copy,new Set(),()=>{},{interactive:false});
+  const overlay=createPoseOverlay(viewport,1,copy,new Set(),()=>{},{interactive:false,fullBody:true});
   const skeleton=viewport.querySelector('.pose-overlay');
+  const trail=createBannerTrail(viewport,clip.width,clip.height);
+  skeleton.classList.add('banner-skeleton');
+  const times=asset?.times??clip.times;
+  let motionPose;
   const fitOverlay=()=>{
     const contain=Math.min(viewport.clientWidth/clip.width,viewport.clientHeight/clip.height);
     const cover=Math.max(viewport.clientWidth/clip.width,viewport.clientHeight/clip.height);
-    if(contain) overlay.setTransform({zoom:cover/contain,x:0,y:0});
+    if(contain) { const state={zoom:cover/contain,x:0,y:0}; overlay.setTransform(state);trail.setTransform(state); }
   };
   const resize=new ResizeObserver(fitOverlay);resize.observe(viewport);
   const badge=make('p','banner-badge'); badge.textContent=settings.label;
   root.replaceChildren(viewport,badge);
   if(asset?.previewPose) {
-    overlay.setPose(asset.previewPose,clip.width,clip.height); fitOverlay(); overlay.render(0); reveal(skeleton);
+    overlay.setPose(asset.previewPose,clip.width,clip.height); fitOverlay(); overlay.render(0); if(asset.previewTrail)trail.render(asset.previewTrail,asset.previewTrail.pred.length-1); reveal(skeleton);
   }
   let presentedTime=0;
   let callback, visible=false, loaded=false, wanted=!matchMedia('(prefers-reduced-motion: reduce)').matches;
   const draw=time=>{
-    const frame=loaded&&poster.hidden?bannerFrameAt(clip.times,time):0;
-    overlay.render(frame); viewport.dataset.frame=String(frame);
+    const frame=loaded&&poster.hidden?bannerFrameAt(times,time):0;
+    if(loaded&&poster.hidden) {
+      overlay.render(frame); if(motionPose)trail.render(motionPose,frame);
+    } else if(asset?.previewPose) {
+      overlay.setPose(asset.previewPose,clip.width,clip.height);fitOverlay();overlay.render(0);
+      if(asset.previewTrail)trail.render(asset.previewTrail,asset.previewTrail.pred.length-1);
+    }
+    viewport.dataset.frame=String(frame);
   };
   const cancel=()=>{
     if(callback!==undefined) {
@@ -81,7 +92,7 @@ export async function mountBanner(root, settings, copy) {
   const sync=()=>{
     if(loaded&&video.readyState>=2&&visible&&!document.hidden&&wanted) {
       if(playPending||!video.paused) return;
-      poster.hidden=true; draw(presentedTime); video.dataset.ready='true';
+      poster.hidden=true; if(motionPose) {overlay.setPose(motionPose,clip.width,clip.height);fitOverlay();} draw(presentedTime); video.dataset.ready='true';
       playPending=video.play().catch(()=>{
         if(video.paused) restorePoster();
       }).finally(()=>{playPending=undefined;});
@@ -114,7 +125,7 @@ export async function mountBanner(root, settings, copy) {
   if (!wanted) return;
   const poseReady=read(asset?.pose??clip.poses.after);
   video.src=asset?.video??clip.video; video.load();
-  const pose=await poseReady;
+  const pose=await poseReady; motionPose=pose;
   overlay.setPose(pose,clip.width,clip.height);fitOverlay(); loaded=true;
   draw(0);reveal(skeleton);sync();
 }
