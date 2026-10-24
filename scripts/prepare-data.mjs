@@ -65,14 +65,16 @@ export function prepareData(root = projectRoot, { probe = probeVideo, preview = 
   }
   const snapshots = [];
   const snapshotPoses = new Map();
-  const configFile = path.join(root, 'materials/data/poses/snapshot.json');
+  const configFile = path.join(root, 'materials/data/snapshot.json');
   if (fs.existsSync(configFile)) {
     try {
       for (const { clip, frame, range, joints } of snapshotItems(read(configFile), clips, { onWarning: warn })) {
-        const hash = cache[clip.video].hash;
-        const image = `materials/data/.generated/${clip.key}-frame-${frame}-${hash}-q${options.snapshotWebpQuality}.webp`;
+        const folder = `materials/data/snapshots/${clip.view}/${clip.id}`;
+        fs.mkdirSync(path.join(root,folder),{recursive:true});
+        const existing = ['jpg','jpeg','png','webp'].map(extension=>`${folder}/${frame}.${extension}`).find(file=>fs.existsSync(path.join(root,file)));
+        const image = existing || `${folder}/${frame}.jpg`;
         try {
-          if (!fs.existsSync(path.join(root, image))) preview(path.join(root, clip.video), path.join(root, image), frame, options.snapshotWebpQuality);
+          ensurePreview(path.join(root,clip.video),path.join(root,image),frame);
           const snapshot = { key: `${clip.key}-${frame}`, image, range, selectedJoints: joints };
           for (const side of ['before', 'after']) {
             const file = clip.poses[side];
@@ -98,6 +100,8 @@ export function prepareData(root = projectRoot, { probe = probeVideo, preview = 
     const contentFile = path.join(root, 'materials/content.json');
     if (fs.existsSync(contentFile)) catalog.banner = prepareBanner(root, clips, read(contentFile).page?.banner);
   } catch (error) { warn(`Banner preview unavailable: ${error.message}`); }
+  const snapshotCatalog = { models, clips: clips.map(({id,key,view,width,height,frameCount})=>({id,key,view,width,height,frameCount})), snapshots };
+  fs.writeFileSync(path.join(root,'materials/data/snapshot-catalog.json'),JSON.stringify(snapshotCatalog));
   fs.writeFileSync(path.join(root, 'materials/data/catalog.json'), JSON.stringify(catalog));
   fs.writeFileSync(cacheFile, JSON.stringify(cache));
   return catalog;
@@ -113,7 +117,7 @@ function probeVideo(file) {
 
 function makePreview(source, destination, frame, quality = 82) {
   const filter = frame === null ? 'scale=192:192:force_original_aspect_ratio=decrease' : `select=eq(n\\,${frame})`;
-  const codec = frame === null ? ['-q:v', '5'] : ['-c:v', 'libwebp', '-quality', String(quality), '-compression_level', '6'];
+  const codec = frame === null || /\.jpe?g$/i.test(destination) ? ['-q:v', frame===null?'5':'2'] : /\.png$/i.test(destination) ? ['-c:v','png'] : ['-c:v', 'libwebp', '-quality', String(quality), '-compression_level', '6'];
   execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', source, '-vf', filter, '-frames:v', '1', ...codec, destination]);
 }
 

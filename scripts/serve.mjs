@@ -16,9 +16,13 @@ let dirty = true;
 fs.mkdirSync(path.join(root, 'materials/data'), { recursive: true });
 if (!built) fs.watch(path.join(root, 'materials/data'), { recursive: true }, (_, filename) => {
   const file = String(filename || '');
-  if (file !== 'catalog.json' && !file.startsWith('.generated')) dirty = true;
+  if (!['catalog.json','snapshot-catalog.json'].includes(file) && !file.startsWith('.generated')) dirty = true;
 });
-if (!built) fs.watch(path.join(root, 'materials/content.json'), () => { dirty = true; });
+if (!built) {
+  fs.watch(path.join(root,'materials/content.json'),()=>{dirty=true;});
+  const catalog=prepareData(root);dirty=false;
+  console.log(`Prepared ${catalog.snapshots.length} snapshot images and ${catalog.clips.length} videos.`);
+}
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.mp4': 'video/mp4', '.jpg': 'image/jpeg', '.webp': 'image/webp' };
 http.createServer((request, response) => {
   if (!['GET', 'HEAD'].includes(request.method)) { response.writeHead(405).end(); return; }
@@ -26,7 +30,7 @@ http.createServer((request, response) => {
   try {
     const url = new URL(request.url, 'http://localhost');
     const relative = decodeURIComponent(url.pathname);
-    if (!built && relative === '/materials/data/catalog.json' && dirty) {
+    if (!built && ['/','/index.html','/materials/data/catalog.json','/materials/data/snapshot-catalog.json'].includes(relative) && dirty) {
       const catalog = prepareData(root);
       dirty = false;
       console.log(`Data refreshed: ${catalog.clips.length} videos, ${catalog.snapshots.length} snapshots.`);

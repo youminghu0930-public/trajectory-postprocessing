@@ -375,3 +375,10 @@ header[data-expanded=false] { width: 0; padding-inline: 0; border: 0; }
 .hero-banner .banner-skeleton { z-index: auto; }
 
 .demo .banner-club-trail { opacity: .85; }
+
+/* Match the reference case study’s scan-friendly content and Abstract metrics. */
+.scan-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
+.scan-list li { padding: 0; margin: 0; font-size: 16px; line-height: 1.65; }
+.scan-list strong { font-weight: 600; color: var(--accent); }
+.section-note { font-size: 13px; line-height: 1.65; color: var(--muted); margin-top: 18px; }
+#abstract .metric-groups { margin-top: 24px; margin-bottom: 0; }

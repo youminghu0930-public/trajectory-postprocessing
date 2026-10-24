@@ -2,3 +2,4 @@ materials/data/catalog.json
 materials/data/.generated/
 dist/
 .DS_Store
+materials/data/snapshot-catalog.json

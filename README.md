@@ -12,14 +12,16 @@ Open http://127.0.0.1:8004. Requires Node.js 22+ and FFmpeg (including ffprobe) 
 
 ## Edit content and materials
 
-- `materials/content.json`: page title, all five section headings and copy, navigation, and viewer labels. The first four sections are placeholders.
+- `materials/content.json`: page title, the Abstract, Introduction, Methods, Results, Discussion, and Conclusion; metric boxes; navigation; and shared viewer labels.
 - `materials/data/vidoes/{face-on,down-the-line}/*.MP4`: original videos. The existing `vidoes` spelling is retained.
 - `materials/data/poses/{before,after}/{view}/{id}.json`: matching frame-based predictions, using `joints` and `pred` arrays.
-- `materials/data/poses/snapshot.json`: snapshot ranges with inclusive zero-based `[start, end]` indices, a selected `joint`, and Before/After `message_box` text. Optional `highlight_index` is a single zero-based frame inside the range. The background and message connectors use this frame (or the end frame when omitted); two fading trajectories show the selected joint throughout the range.
+- `materials/data/snapshot.json`: snapshot ranges with inclusive zero-based `[start, end]` indices, a selected `joint`, and Before/After `message_box` text. Optional `highlight_index` is a single zero-based frame inside the range. The background and message connectors use this frame (or the end frame when omitted); two fading trajectories show the selected joint throughout the range.
+- `materials/data/snapshots/{view}/{video-id}/{frame-index}.jpg`: extracted images, prepared on server startup and page refresh when missing or stale. Existing `.jpg`, `.jpeg`, `.png`, and `.webp` images are supported. Frame indices in filenames are zero-based.
+- `materials/data/snapshot-catalog.json`: generated lightweight snapshot metadata, separate from the video catalog.
 - `materials/data/credits.json`: optional source credits.
 - `materials/data/catalog.json` and `.generated/`: disposable generated metadata and previews; ignored by Git.
 
-Videos need both matching pose files to appear. Source materials stay in place; no source media is copied from the reference repos. Snapshots share one image with toggleable overlays; videos use synchronized Before/After panels, a frame slider, centered controls, and a video list.
+Videos need both matching pose files to appear. Source materials stay in place; no source media is copied from the reference repos. Abstract snapshots load images and compact pose data only; no browser video decoding or extraction is used. The first snapshot starts immediately, and the remaining snapshots and Results videos warm after the banner leaves view. Snapshots share one image with toggleable overlays; videos use synchronized Before/After panels, a frame slider, centered controls, and a video list.
 
 ## Check and build
 
