@@ -288,8 +288,6 @@ header[data-expanded=false] { width: 0; padding-inline: 0; border: 0; }
 .comparison-legend { display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap; }
 .legend-model-0 { color: #795500; }
 .legend-model-1 { color: #146b45; }
-.pose-overlay-0 .joint-dot { fill: #ffce69; }
-.pose-overlay-1 .joint-dot { fill: #63f5b4; }
 .callouts-before path { stroke: #ffce69; }
 .callouts-after path { stroke: #63f5b4; }
 .callouts-before .snapshot-callout { border-color: #ffce69; }
