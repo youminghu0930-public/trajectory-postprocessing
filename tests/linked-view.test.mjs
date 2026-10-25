@@ -64,3 +64,22 @@ test('default snapshot focus is recalculated after mobile resize without overrid
     assert.deepEqual(state, adjusted, 'Resizing must preserve manually adjusted framing');
   } finally { globalThis.ResizeObserver = previousObserver; }
 });
+
+test('snapshot interactions render at most once per animation frame without losing updates',()=>{
+ const saved={raf:globalThis.requestAnimationFrame,caf:globalThis.cancelAnimationFrame,observer:globalThis.ResizeObserver};
+ const frames=new Map();let id=0,changes=0,last;
+ globalThis.requestAnimationFrame=callback=>{frames.set(++id,callback);return id;};
+ globalThis.cancelAnimationFrame=id=>frames.delete(id);
+ globalThis.ResizeObserver=class {observe(){}};
+ try {
+  const viewport=new EventTarget();Object.assign(viewport,{clientWidth:300,clientHeight:400,classList:{toggle(){}},dataset:{}});
+  const view=installLinkedView([viewport],[{style:{}}],state=>{changes++;last=state;},{frameThrottle:true});
+  const initial=changes;
+  for(let i=0;i<10;i++)view.zoomBy(1.1);
+  assert.equal(frames.size,1);assert.equal(changes,initial);
+  const callback=[...frames.values()][0];frames.clear();callback();
+  assert.equal(changes,initial+1);assert.ok(Math.abs(last.zoom-1.1**10)<1e-9);
+  view.zoomBy(1.2);view.setView({zoom:1,x:0,y:0});
+  assert.equal(frames.size,0);assert.equal(last.zoom,1);
+ } finally {globalThis.requestAnimationFrame=saved.raf;globalThis.cancelAnimationFrame=saved.caf;globalThis.ResizeObserver=saved.observer;}
+});

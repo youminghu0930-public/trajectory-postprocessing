@@ -53,15 +53,19 @@ async function paintSVG(context, source, width, height) {
   } finally { URL.revokeObjectURL(url); }
 }
 
-function addShade(viewport, entry, side) {
+export function addShade(viewport, entry, side) {
   const shade = make('canvas', undefined, 'snapshot-shade');
   shade.setAttribute('aria-hidden', 'true');
   viewport.append(shade);
+  let cachedMask, cachedVisibility;
   return state => {
     const width = viewport.clientWidth, height = viewport.clientHeight;
     const ratio = Math.min(2, window.devicePixelRatio || 1);
-    shade.width = Math.round(width*ratio); shade.height = Math.round(height*ratio);
+    const pixelWidth = Math.round(width*ratio), pixelHeight = Math.round(height*ratio);
+    if (shade.width !== pixelWidth || shade.height !== pixelHeight) {shade.width=pixelWidth;shade.height=pixelHeight;}
     const context = shade.getContext('2d');
+    context.resetTransform();context.clearRect(0,0,shade.width,shade.height);
+    context.globalCompositeOperation='source-over';
     const fit = Math.min(width/entry.width, height/entry.height);
     context.scale(ratio, ratio);
     // Cover the entire viewer, including letterboxing and exposed space while panning.
@@ -74,14 +78,22 @@ function addShade(viewport, entry, side) {
     context.globalCompositeOperation = 'destination-out';
     context.fillStyle = '#000';
     if (entry.range && entry.trajectories) {
-      // Paint opacity as grayscale and take the pixelwise maximum (union).
+      const panel=viewport.closest('.comparison-panel');
+      const visibility=JSON.stringify([panel.dataset.hideBefore,panel.dataset.hideAfter]);
+      if (!cachedMask || cachedVisibility!==visibility) {
+      // Rasterize the union once in source coordinates, independent of pan/zoom.
       const mask = document.createElement('canvas');
-      mask.width = shade.width; mask.height = shade.height;
+      const radius = Math.max(entry.width, entry.height) / 32;
+      const allPoints=['before','after'].flatMap(model=>trajectoryPoints(entry.trajectories[model],entry.joints[0]).filter(Boolean));
+      const x=Math.min(0,...allPoints.map(p=>p.x-radius)),y=Math.min(0,...allPoints.map(p=>p.y-radius));
+      const sourceWidth=Math.max(entry.width,...allPoints.map(p=>p.x+radius))-x;
+      const sourceHeight=Math.max(entry.height,...allPoints.map(p=>p.y+radius))-y;
+      const maskScale=Math.min(1,1280/Math.max(sourceWidth,sourceHeight));
+      mask.width=Math.ceil(sourceWidth*maskScale);mask.height=Math.ceil(sourceHeight*maskScale);
       const maskContext = mask.getContext('2d');
       maskContext.fillStyle = '#000'; maskContext.fillRect(0, 0, mask.width, mask.height);
-      maskContext.setTransform(context.getTransform());
+      maskContext.scale(maskScale,maskScale);maskContext.translate(-x,-y);
       maskContext.globalCompositeOperation = 'lighten';
-      const radius = Math.max(entry.width, entry.height) / 32;
       for (const [i, model] of ['before', 'after'].entries()) {
         if (viewport.closest('.comparison-panel').dataset[i ? 'hideAfter' : 'hideBefore'] === 'true') continue;
         const points = trajectoryPoints(entry.trajectories[model], entry.joints[0]);
@@ -102,8 +114,9 @@ function addShade(viewport, entry, side) {
       const pixels = maskContext.getImageData(0, 0, mask.width, mask.height);
       for (let i = 0; i < pixels.data.length; i += 4) pixels.data[i+3] = pixels.data[i];
       maskContext.putImageData(pixels, 0, 0);
-      context.save(); context.resetTransform();
-      context.drawImage(mask, 0, 0); context.restore();
+      cachedMask={canvas:mask,x,y,width:sourceWidth,height:sourceHeight};cachedVisibility=visibility;
+      }
+      context.drawImage(cachedMask.canvas,cachedMask.x,cachedMask.y,cachedMask.width,cachedMask.height);
       return;
     }
     for (const [x, y] of ['before', 'after'].flatMap(model => spotlightPoints(entry[model], entry.joints))) {
@@ -201,14 +214,25 @@ export async function mountSnapshots(root, copy, {warmAfter=Promise.resolve(),on
       return skeletonView({ pose: combined, width: entry.width, height: entry.height,
         viewportWidth: viewports[0].clientWidth, viewportHeight: viewports[0].clientHeight });
     };
+    let interacting=false,settleTimer;
     const linkedView = installLinkedView(viewports, scenes, state => {
       viewState = state;
       overlays.forEach(overlay => overlay.setTransform(state));
       shades.forEach(update => update(state));
-      callouts.forEach(update => update(state));
+      if(!interacting) callouts.forEach(update => update(state));
     }, {
+      frameThrottle: true,
       resizeView: state => focusReady && !manuallyAdjusted ? defaultFocus() : state,
-      onInteraction: () => { manuallyAdjusted = true; },
+      onInteraction: () => {
+        manuallyAdjusted=true;interacting=true;
+        panels.forEach(panel=>{panel.dataset.interacting='true';});
+        clearTimeout(settleTimer);
+        settleTimer=setTimeout(()=>{
+          interacting=false;
+          callouts.forEach(update=>update(viewState));
+          panels.forEach(panel=>{delete panel.dataset.interacting;});
+        },140);
+      },
     });
     let previewKey, previewJob = Promise.resolve();
     previewPainters.push(() => {

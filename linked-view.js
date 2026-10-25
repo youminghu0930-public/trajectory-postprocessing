@@ -18,7 +18,7 @@ export function focusedView({ point, width, height, viewportWidth, viewportHeigh
   });
 }
 
-export function installLinkedView(viewports, scenes, onChange, { resizeView, onInteraction } = {}) {
+export function installLinkedView(viewports, scenes, onChange, { resizeView, onInteraction, frameThrottle = false } = {}) {
   let state = { zoom: 1, x: 0, y: 0 };
   function apply(next) {
     state = constrainView(next);
@@ -30,7 +30,15 @@ export function installLinkedView(viewports, scenes, onChange, { resizeView, onI
     });
     onChange(state);
   }
-  function interact(next) { onInteraction?.(); apply(next); }
+  let interactionFrame;
+  function interact(next) {
+    onInteraction?.();
+    if (!frameThrottle) { apply(next); return; }
+    state = constrainView(next);
+    if (interactionFrame === undefined) interactionFrame = requestAnimationFrame(() => {
+      interactionFrame = undefined; apply(state);
+    });
+  }
   for (const viewport of viewports) {
     const pointers = new Map();
     let moved = false, suppressClick = false;
@@ -60,8 +68,8 @@ export function installLinkedView(viewports, scenes, onChange, { resizeView, onI
         const midpoint = points => ({ x: (points[0].x + points[1].x) / 2, y: (points[0].y + points[1].y) / 2 });
         const distance = points => Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
         const before = midpoint(old), after = midpoint(current);
-        interact(zoomView(state, state.zoom * distance(current) / Math.max(1, distance(old)), anchor(before.x, before.y)));
-        pan(after.x - before.x, after.y - before.y);
+        const zoomed = zoomView(state, state.zoom * distance(current) / Math.max(1, distance(old)), anchor(before.x, before.y));
+        interact({...zoomed,x:zoomed.x+(after.x-before.x)/viewport.clientWidth,y:zoomed.y+(after.y-before.y)/viewport.clientHeight});
         moved = true;
       } else if (state.zoom > 1 && (moved || Math.hypot(event.clientX - previous.startX, event.clientY - previous.startY) > 4)) {
         pan(event.clientX - previous.x, event.clientY - previous.y);
@@ -88,7 +96,10 @@ export function installLinkedView(viewports, scenes, onChange, { resizeView, onI
   viewports.forEach(viewport => resize.observe(viewport));
   apply(state);
   return {
-    setView: next => apply(next),
+    setView: next => {
+      if (interactionFrame !== undefined) { cancelAnimationFrame(interactionFrame); interactionFrame = undefined; }
+      apply(next);
+    },
     zoomBy: factor => interact(zoomView(state, state.zoom * factor)),
     reset: () => interact({ zoom: 1, x: 0, y: 0 })
   };
