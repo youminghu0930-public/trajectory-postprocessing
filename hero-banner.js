@@ -56,6 +56,7 @@ export async function mountBanner(root, settings, copy) {
   if(asset?.previewPose) {
     overlay.setPose(asset.previewPose,clip.width,clip.height); fitOverlay(); overlay.render(0); if(asset.previewTrail)trail.render(asset.previewTrail,asset.previewTrail.pred.length-1); reveal(skeleton);
   }
+  let playbackPose;
   let presentedTime=0;
   let callback, visible=false, loaded=false, wanted=!matchMedia('(prefers-reduced-motion: reduce)').matches;
   const draw=time=>{
@@ -78,6 +79,10 @@ export async function mountBanner(root, settings, copy) {
   const tick=(now,metadata)=>{
     callback=undefined;
     presentedTime=metadata?.mediaTime??video.currentTime;
+    if(loaded&&!video.paused) {
+      if(!poster.hidden&&playbackPose) {overlay.setPose(playbackPose,clip.width,clip.height);fitOverlay();}
+      poster.hidden=true;video.dataset.ready='true';
+    }
     draw(presentedTime);
     if(!video.paused) schedule();
   };
@@ -92,7 +97,7 @@ export async function mountBanner(root, settings, copy) {
   const sync=()=>{
     if(loaded&&video.readyState>=2&&visible&&!document.hidden&&wanted) {
       if(playPending||!video.paused) return;
-      poster.hidden=true; if(motionPose) {overlay.setPose(motionPose,clip.width,clip.height);fitOverlay();} draw(presentedTime); video.dataset.ready='true';
+      if(motionPose) {overlay.setPose(motionPose,clip.width,clip.height);fitOverlay();} draw(presentedTime); video.dataset.ready='true';
       playPending=video.play().catch(()=>{
         if(video.paused) restorePoster();
       }).finally(()=>{playPending=undefined;});
@@ -126,6 +131,6 @@ export async function mountBanner(root, settings, copy) {
   const poseReady=read(asset?.pose??clip.poses.after);
   video.src=asset?.video??clip.video; video.load();
   const pose=await poseReady; motionPose=pose;
-  overlay.setPose(pose,clip.width,clip.height);fitOverlay(); loaded=true;
+  playbackPose=pose; overlay.setPose(pose,clip.width,clip.height);fitOverlay(); loaded=true;
   draw(0);reveal(skeleton);sync();
 }
