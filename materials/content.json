@@ -162,7 +162,34 @@
       "show": "Show swing {video}, frame {frame}",
       "frame": "Frame {frame}",
       "position": "{current} / {total} · Swing {video} · Frame {frame}",
-      "focus": "Focus: {joints}"
+      "focus": "Focus: {joints}",
+      "instructionsLabel": "Snapshot instructions",
+      "instructions": [
+        {
+          "gesture": "Scroll or pinch",
+          "action": "Zoom in or out."
+        },
+        {
+          "gesture": "Drag when zoomed in",
+          "action": "Pan the image."
+        },
+        {
+          "gesture": "Before / After",
+          "action": "Show or hide each trajectory."
+        },
+        {
+          "gesture": "Hover or tap a dot",
+          "action": "Inspect the joint name and frame, and highlight its matching pair."
+        },
+        {
+          "gesture": "Click / Shift-click",
+          "action": "Select one pair, or add and remove pairs."
+        },
+        {
+          "gesture": "Previous / next",
+          "action": "Browse the snapshot comparisons."
+        }
+      ]
     },
     "creditLabel": "Video source:",
     "creditLink": "Original Instagram post ↗",
@@ -223,6 +250,45 @@
       "golf_club_shaft": "Club shaft",
       "golf_club_heel": "Club heel",
       "golf_club_head": "Club head"
-    }
+    },
+    "instructionsLabel": "Video instructions",
+    "instructions": [
+      {
+        "gesture": "Scroll or pinch",
+        "action": "Zoom in or out."
+      },
+      {
+        "gesture": "Drag when zoomed in",
+        "action": "Pan the image."
+      },
+      {
+        "gesture": "Space",
+        "action": "Play or pause."
+      },
+      {
+        "gesture": "Left / right arrow",
+        "action": "Tap for one frame; hold to repeat."
+      },
+      {
+        "gesture": "Hover",
+        "action": "Inspect a joint or connection."
+      },
+      {
+        "gesture": "Click",
+        "action": "Select a single joint or connection."
+      },
+      {
+        "gesture": "Shift-click",
+        "action": "Select multiple joints or connections."
+      },
+      {
+        "gesture": "Selected joints",
+        "action": "Trails show the preceding 30% of the video. Right wrist and club head are selected by default; selecting a new video restores these defaults."
+      },
+      {
+        "gesture": "Deselect all joints",
+        "action": "Hide the motion trails."
+      }
+    ]
   }
 }

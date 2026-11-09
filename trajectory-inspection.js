@@ -11,7 +11,7 @@ export function createTrajectoryInspection(viewport, panel, entry, copy, overlay
   const points = sides.map(side => trajectoryPoints(entry.trajectories[side], entry.joints[0]));
   const messageTargets = new Set([(entry.highlight_index ?? entry.range[1]) - entry.range[0]]);
   const selected = new Set();
-  let layoutKey, messageLayout;
+  let layoutKey, messageLayout, layoutState;
   let hover = null, pinned = false, state = {zoom:1,x:0,y:0};
   const name = copy.jointNames[entry.joints[0]] || entry.joints[0].replaceAll('_', ' ');
   const tooltip = document.createElement('div');
@@ -72,7 +72,9 @@ export function createTrajectoryInspection(viewport, panel, entry, copy, overlay
 
     const all = points.flat().filter(Boolean).map(project);
     if (!all.length) return;
-    const key=JSON.stringify([state,width,height]);
+    // Translation preserves every collision and crossing relationship. Do not
+    // rerun the discrete placement search while panning.
+    const key=JSON.stringify([state.zoom,width,height]);
     const recalculate=key!==layoutKey;
     const bones=points.flatMap(set=>set.flatMap((p,i)=>p&&set[i-1]?[[project(set[i-1]),project(p)]]:[]));
     const bodyPoints=[], bodyBones=[], bodyAreas=[];
@@ -96,15 +98,19 @@ export function createTrajectoryInspection(viewport, panel, entry, copy, overlay
       return {width:box.offsetWidth,height:box.offsetHeight};
     });
     const targets=points.map(set=>[...messageTargets].map(index=>set[index]).filter(Boolean).map(project));
-    if (recalculate || !messageLayout) messageLayout=layoutTrajectoryMessages({width,height,sizes,targets,
-      points:[...all,...bodyPoints],bones:[...bones,...bodyBones],obstacles:bodyAreas});
+    if (recalculate || !messageLayout) {
+      messageLayout=layoutTrajectoryMessages({width,height,sizes,targets,
+        points:[...all,...bodyPoints],bones:[...bones,...bodyBones],obstacles:bodyAreas});
+      layoutState={...state};
+    }
+    const offsetX=(state.x-layoutState.x)*width, offsetY=(state.y-layoutState.y)*height;
     layers.forEach(({arrows,box},i)=>{
       const position=messageLayout.boxes[i];
-      box.style.left=`${position.x}px`;box.style.top=`${position.y}px`;
+      box.style.left=`${position.x+offsetX}px`;box.style.top=`${position.y+offsetY}px`;
       arrows.setAttribute('viewBox',`0 0 ${width} ${height}`);arrows.replaceChildren();
       for (const route of messageLayout.routes[i]) {
         const line=document.createElementNS(ns,'path');
-        line.setAttribute('d',route.path.map((p,j)=>`${j?'L':'M'}${p.x} ${p.y}`).join(' '));
+        line.setAttribute('d',route.path.map((p,j)=>`${j?'L':'M'}${p.x+offsetX} ${p.y+offsetY}`).join(' '));
         line.classList.add('trajectory-connector');arrows.append(line);
       }
     });

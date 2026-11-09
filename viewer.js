@@ -1,3 +1,4 @@
+import { createViewerInfo } from './viewer-info.js';
 import { createBannerTrail, videoTrailFrameCount } from './banner-trail.js';
 import { createFrameSeeker } from './frame-seeker.js';
 import { createPoseOverlay } from './pose-overlay.js';
@@ -105,6 +106,7 @@ export async function mountViewer(root, copy, { priorityReady } = {}) {
   const meta = make('div', undefined, 'player-meta');
   const frameLabel = make('span');
   const status = make('span', copy.loading);
+  status.className='player-status';
   status.setAttribute('role', 'status');
   meta.append(frameLabel, status);
   const controls = make('div', undefined, 'playback-controls');
@@ -115,30 +117,19 @@ export async function mountViewer(root, copy, { priorityReady } = {}) {
     button.setAttribute('aria-label', copy[key]);
     controls.append(button); buttons[key] = button;
   }
-  const zoomControls = make('div', undefined, 'zoom-controls');
-  zoomControls.setAttribute('role', 'group'); zoomControls.setAttribute('aria-label', copy.panZoomLabel);
-  const zoomOut = make('button', '−'), zoomIn = make('button', '+'), resetView = make('button', copy.resetView), zoomLabel = make('output');
-  for (const [button, label] of [[zoomOut, copy.zoomOut], [zoomIn, copy.zoomIn], [resetView, copy.resetView]]) {
-    button.type = 'button'; button.title = label; button.setAttribute('aria-label', label);
-  }
-  zoomLabel.setAttribute('aria-label', copy.zoomLevel);
-  zoomControls.append(zoomOut, zoomLabel, zoomIn, resetView);
   const linkedView = installLinkedView(viewports, scenes, state => {
     trailState = state;
     overlays.forEach(overlay => overlay.setTransform(state));
     trails.forEach(trail => trail.setTransform(state));
-    zoomLabel.textContent = `${Math.round(state.zoom * 100)}%`;
-    zoomOut.disabled = state.zoom <= 1; zoomIn.disabled = state.zoom >= 6;
-    resetView.disabled = state.zoom === 1;
   });
-  zoomOut.onclick = () => linkedView.zoomBy(1 / 1.25);
-  zoomIn.onclick = () => linkedView.zoomBy(1.25);
-  resetView.onclick = () => linkedView.reset();
+  const controlRow=make('div',undefined,'player-control-row');
+  controlRow.append(meta,controls);
+  root.previousElementSibling?.append(createViewerInfo('video-instructions',copy.instructionsLabel,copy.instructions,'section-info'));
   const credit = make('div', undefined, 'video-credit');
   credit.hidden = true;
   const details = make('div', undefined, 'video-details');
-  details.append(credit, make('p', copy.panZoomHint, 'keyboard-hint'), make('p', copy.keyboard, 'keyboard-hint'), make('p', copy.inspectionHint, 'keyboard-hint'));
-  player.append(screens, slider, meta, controls, zoomControls, video);
+  details.append(credit);
+  player.append(screens, slider, controlRow, video);
   const sidebar = make('aside', undefined, 'video-sidebar');
   const sidebarHeading = make('div', undefined, 'sidebar-heading');
   const countLabel = make('span', copy.loadingList);
@@ -379,7 +370,7 @@ export async function mountViewer(root, copy, { priorityReady } = {}) {
       button.type = 'button'; button.dataset.key = clip.key;
       button.setAttribute('aria-pressed', String(active?.key === clip.key));
       const image = make('img'); image.src = clip.thumbnail; image.alt = ''; image.loading = 'lazy'; image.decoding = 'async';
-      image.width = 96; image.height = 72;
+      image.width = 64; image.height = 64;
       const caption = make('span'); caption.append(make('strong', format(copy.clipLabel, clip)), make('small', copy.views[clip.view] || clip.view.replaceAll('-', ' ')));
       button.append(image, caption); button.onclick = event => { event.stopPropagation(); select(clip); }; list.append(button);
     }

@@ -1,3 +1,4 @@
+import { createViewerInfo } from './viewer-info.js';
 import { createTrajectoryInspection } from './trajectory-inspection.js';
 import { createTrajectoryOverlay } from './snapshot-trajectory.js';
 import { trajectoryPoints } from './snapshot-data.js';
@@ -214,25 +215,15 @@ export async function mountSnapshots(root, copy, {warmAfter=Promise.resolve(),on
       return skeletonView({ pose: combined, width: entry.width, height: entry.height,
         viewportWidth: viewports[0].clientWidth, viewportHeight: viewports[0].clientHeight });
     };
-    let interacting=false,settleTimer;
     const linkedView = installLinkedView(viewports, scenes, state => {
       viewState = state;
       overlays.forEach(overlay => overlay.setTransform(state));
       shades.forEach(update => update(state));
-      if(!interacting) callouts.forEach(update => update(state));
+      callouts.forEach(update => update(state));
     }, {
       frameThrottle: true,
       resizeView: state => focusReady && !manuallyAdjusted ? defaultFocus() : state,
-      onInteraction: () => {
-        manuallyAdjusted=true;interacting=true;
-        panels.forEach(panel=>{panel.dataset.interacting='true';});
-        clearTimeout(settleTimer);
-        settleTimer=setTimeout(()=>{
-          interacting=false;
-          callouts.forEach(update=>update(viewState));
-          panels.forEach(panel=>{delete panel.dataset.interacting;});
-        },140);
-      },
+      onInteraction: () => { manuallyAdjusted = true; },
     });
     let previewKey, previewJob = Promise.resolve();
     previewPainters.push(() => {
@@ -320,7 +311,8 @@ export async function mountSnapshots(root, copy, {warmAfter=Promise.resolve(),on
   });
   const details = make('div', undefined, 'snapshot-details');
   const credit = make('p', undefined, 'snapshot-source');
-  details.append(credit, make('p', copy.legendHint, 'keyboard-hint'), make('p', copy.panZoomHint, 'keyboard-hint'), make('p', labels.inspectionHint, 'keyboard-hint'));
+  root.previousElementSibling?.append(createViewerInfo('snapshot-instructions',labels.instructionsLabel,labels.instructions,'section-info'));
+  details.append(credit);
   root.replaceChildren(shell, dots, details);
 
   const count = cards.length;

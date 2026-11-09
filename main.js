@@ -123,14 +123,14 @@ async function renderPage() {
     if (content.snapshots || content.id==='result') {
       const copy = demoCopy;
       if (content.snapshots) {
-        section.append(element('h3', copy.snapshots.title, 'result-subheading'));
+        section.append(viewerHeading(copy.snapshots.title));
         const snapshots = element('div', undefined, 'snapshot-demo');
         const loading = element('p', copy.snapshots.loading, 'demo-loading');
         loading.setAttribute('role', 'status'); snapshots.append(loading); section.append(snapshots);
         demos.push({ demo: snapshots, copy, modulePath: './snapshot-viewer.js', mount: 'mountSnapshots', error: copy.snapshots.error });
       }
       if(content.id==='result') {
-        section.append(element('h3',copy.videoTitle,'result-subheading'));
+        section.append(viewerHeading(copy.videoTitle));
         const demo = element('div', undefined, 'demo');
         const loading = element('p', copy.loadingDemo, 'demo-loading');
         loading.setAttribute('role', 'status');
@@ -192,3 +192,8 @@ renderPage().catch(error => {
   console.error(error);
   document.querySelector('#app').textContent = 'Unable to load page content. Please reload.';
 });
+
+function viewerHeading(text) {
+ const row=element('div',undefined,'viewer-section-heading');
+ row.append(element('h3',text,'result-subheading'));return row;
+}
