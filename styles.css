@@ -429,14 +429,12 @@ header[data-expanded=false] { width: 0; padding-inline: 0; border: 0; }
   .video-sidebar { grid-row: auto; }
   .video-list { flex: 0 1 auto; min-height: 0; max-height: 310px; }
 }
+/* Restore the stacked playback layout on phones only. */
 @media(max-width:650px) {
-  .player-control-row .playback-controls { grid-column: 2; flex-wrap: nowrap; gap: 3px; }
-  .player-control-row .playback-controls button { width: 36px; height: 36px; flex-basis: 36px; }
-  .player-control-row .player-meta { font-size: 11px; }
-}
-@media(max-width:360px) {
-  .player-control-row .playback-controls { gap: 1px; }
-  .player-control-row .playback-controls button { width: 32px; height: 36px; flex-basis: 32px; }
+  .player-control-row { grid-template-columns: minmax(0,1fr); gap: 16px; padding-top: 4px; }
+  .player-control-row .player-meta { grid-column: 1; font-size: 12px; min-height: 20px; }
+  .player-control-row .playback-controls { grid-column: 1; justify-content: center; flex-wrap: nowrap; gap: 4px; margin: 0 0 12px; }
+  .player-control-row .playback-controls button { width: 44px; height: 44px; flex: 0 0 44px; }
 }
 .viewer-section-heading { grid-column: 1 / -1; position: relative; z-index: 8; display: flex; align-items: center; gap: 4px; }
 .section-info { position: static; padding: 0; flex: 0 0 36px; }
